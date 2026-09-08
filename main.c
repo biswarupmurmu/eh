@@ -1,0 +1,36 @@
+#include "array.h"
+#include "draw.h"
+#include "editor.h"
+#include "filehandler.h"
+#include "keypresshandler.h"
+#include "terminal.h"
+#include <unistd.h>
+
+void handleArgs(int argc, char *argv[], Editor *editor) {
+    if (argc == 1)
+        return;
+    char *filename = argv[1];
+    readFileToBuffer(editor->buffer, filename);
+    editor->filename = filename;
+}
+
+int main(int argc, char *argv[]) {
+    Editor editor;
+    Array buffer;
+    initArray(&buffer, sizeof(Array *));
+    editor.buffer = &buffer;
+    initEditor(&editor);
+    handleArgs(argc, argv, &editor);
+
+    drawEditor(&editor);
+    char c;
+    while (1) {
+        int n = read(STDIN_FILENO, &c, 1);
+        if (n == 1) {
+            readKeyPress(c, &editor);
+            drawEditor(&editor);
+        }
+    }
+    disableRawMode();
+    return 0;
+}
