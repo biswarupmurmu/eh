@@ -1,3 +1,4 @@
+#include "array.h"
 #include "editor.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -54,14 +55,18 @@ void drawBuffer(Editor *editor) {
     freeArray(&render_buffer);
 }
 
-void addBorderedText(Array *render_buffer, char *text, int leftPadding) {
+// add borderedTextCenter
+void addBorderedText(Array *render_buffer, char *text, int screenWidth) {
+    int textLen = (int)strlen(text);
+    int innerPadding = 1;
+    int boxWidth = textLen + innerPadding * 2 + 2; // 2 for the |
+    int leftPadding = (screenWidth - boxWidth) / 2;
     char padding[leftPadding];
     memset(padding, 32, leftPadding);
 
-    int textLen = strlen(text);
     addToArray(render_buffer, padding, render_buffer->len, leftPadding);
     addToArray(render_buffer, "┌", render_buffer->len, strlen("┌"));
-    for (int i = 0; i < textLen + 2; i++) {
+    for (int i = 0; i < textLen + innerPadding * 2; i++) {
         addToArray(render_buffer, "─", render_buffer->len, strlen("─"));
     }
     addToArray(render_buffer, "┐\r\n", render_buffer->len, strlen("┐\r\n"));
@@ -71,10 +76,21 @@ void addBorderedText(Array *render_buffer, char *text, int leftPadding) {
     addToArray(render_buffer, " │\r\n", render_buffer->len, strlen(" │\r\n"));
     addToArray(render_buffer, padding, render_buffer->len, leftPadding);
     addToArray(render_buffer, "└", render_buffer->len, strlen("└"));
-    for (int i = 0; i < textLen + 2; i++) {
+    for (int i = 0; i < textLen + innerPadding * 2; i++) {
         addToArray(render_buffer, "─", render_buffer->len, strlen("─"));
     }
     addToArray(render_buffer, "┘\r\n", render_buffer->len, strlen("┘\r\n"));
+}
+
+void addCenteredText(Array *buffer, char *message, int window_width,
+                     int ignoredChars) {
+    // add ewline character
+    addToArray(buffer, "\n", buffer->len, 1);
+    int leftPadding = (window_width - strlen(message) + ignoredChars) / 2;
+    for (int i = 0; i < leftPadding; i++) {
+        addToArray(buffer, " ", buffer->len, 1);
+    }
+    addToArray(buffer, message, buffer->len, strlen(message));
 }
 
 void drawSave(Editor *editor) {
@@ -83,33 +99,24 @@ void drawSave(Editor *editor) {
 
     int w = editor->window_col;
     int h = editor->window_row;
-    int filenameWindow = 40;
-
-    char emptyBuffer[w * (h / 2)];
-    memset(emptyBuffer, 32, (h / 2) * w);
 
     // clear screen \x1b[2J
     // move cursor to top left \x1b[H
     addToArray(&render_buffer, "\x1b[2J\x1b[H", 0, 7);
-    addToArray(&render_buffer, emptyBuffer, render_buffer.len,
-               ((h / 2) - 4) * w);
+    for (int i = 0; i < (h / 2) - 5; i++) {
+        addToArray(&render_buffer, "\n", render_buffer.len, 1);
+    }
 
-    // addToArray(&render_buffer, emptyBuffer, render_buffer.len,
-    //            (w - filenameWindow) / 2);
-    // addToArray(&render_buffer, "\x1b[44m", render_buffer.len, 5);
     char *filename = editor->filename;
-    addBorderedText(&render_buffer, filename, (w - strlen(filename)) / 2);
-    // addToArray(&render_buffer, filename, render_buffer.len,
-    // strlen(filename));
-    addToArray(&render_buffer, emptyBuffer, render_buffer.len,
-               filenameWindow - strlen(filename));
-    // addToArray(&render_buffer, "\x1b[0m", render_buffer.len, 4);
 
-    char cursor_pos[32];
-    snprintf(cursor_pos, sizeof(cursor_pos), "\x1b[%d;%dH",
-             editor->cursor_row + 1, editor->cursor_col + 1);
-    addToArray(&render_buffer, &cursor_pos, render_buffer.len,
-               strlen(cursor_pos));
+    addBorderedText(&render_buffer, filename, w);
+    addCenteredText(&render_buffer, "Enter to \033[32msave\033[0m", w, 9);
+    addCenteredText(&render_buffer, "Esc to \033[34mreturn\033[0m to editing", w,
+                    9);
+    addCenteredText(&render_buffer,
+                    "Ctrl+C to \033[1;31mquit without\033[0m saving", w, 11);
+
+    // will implement editing filename in this window
 
     write(STDOUT_FILENO, render_buffer.ptr, render_buffer.len);
 
