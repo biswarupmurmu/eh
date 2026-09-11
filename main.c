@@ -3,7 +3,6 @@
 #include "editor.h"
 #include "filehandler.h"
 #include "keypresshandler.h"
-#include "terminal.h"
 #include <unistd.h>
 
 void handleArgs(int argc, char *argv[], Editor *editor) {
@@ -31,6 +30,6 @@ int main(int argc, char *argv[]) {
             drawEditor(&editor);
         }
     }
-    disableRawMode();
+    exitEditor(&editor);
     return 0;
 }

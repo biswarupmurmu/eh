@@ -17,5 +17,6 @@ typedef struct {
 } Editor;
 
 void initEditor(Editor *editor);
+void exitEditor(Editor *editor);
 
 #endif
