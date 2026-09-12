@@ -107,7 +107,7 @@ void drawSave(Editor *editor) {
         addToArray(&render_buffer, "\n", render_buffer.len, 1);
     }
 
-    char *filename = editor->filename;
+    char *filename = editor->filename->ptr;
 
     addBorderedText(&render_buffer, filename, w);
     addCenteredText(&render_buffer, "Enter to \033[32msave\033[0m", w, 9);

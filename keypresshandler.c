@@ -183,7 +183,7 @@ void readKeyPress(char c, Editor *editor) {
             editor->cursor_col = 0;
             break;
         } else if (editor->editing_view == false) {
-            writeBufferToFile(editor->buffer, editor->filename);
+            writeBufferToFile(editor->buffer, editor->filename->ptr);
             exitEditor(editor);
         }
         break;

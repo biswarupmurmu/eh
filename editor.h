@@ -5,7 +5,7 @@
 
 typedef struct {
     Array *buffer;
-    char *filename;
+    Array *filename;
     int render_start_line;
     int buffer_line;
     int buffer_char;
@@ -18,5 +18,6 @@ typedef struct {
 
 void initEditor(Editor *editor);
 void exitEditor(Editor *editor);
+void initBuffer(Editor *editor);
 
 #endif

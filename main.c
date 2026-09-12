@@ -3,14 +3,19 @@
 #include "editor.h"
 #include "filehandler.h"
 #include "keypresshandler.h"
+#include <string.h>
 #include <unistd.h>
 
 void handleArgs(int argc, char *argv[], Editor *editor) {
-    if (argc == 1)
+    if (argc == 1) {
+        initBuffer(editor);
         return;
+    }
     char *filename = argv[1];
     readFileToBuffer(editor->buffer, filename);
-    editor->filename = filename;
+    freeArray(editor->filename);
+    addToArray(editor->filename, filename, editor->filename->len,
+               strlen(filename));
 }
 
 int main(int argc, char *argv[]) {
