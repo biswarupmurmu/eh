@@ -15,7 +15,9 @@ void freeArray(Array *array) {
     // freeing the malloc'ed dynamic array pointer
     if (!array)
         return;
+    array->len = 0;
     free(array->ptr);
+	array->ptr = NULL;
 }
 
 void removeFromArray(Array *array, int index, int length) {
