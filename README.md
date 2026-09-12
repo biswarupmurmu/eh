@@ -12,7 +12,7 @@
 - Copy the binary `build/eh` to wherever you like(to any directory in your your `PATH`)
 
 ### Usage
-Open a file `eh [filename]`
-Get help `eh -h`
-Save file `Ctrl+s`
-Exit `Ctrl+c`
+- Open a file `eh [filename]`
+- Get help `eh -h`
+- Save file `Ctrl+s`
+- Exit `Ctrl+c`
