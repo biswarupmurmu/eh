@@ -12,7 +12,7 @@ void initArray(Array *array, int element_size) {
 }
 
 void freeArray(Array *array) {
-	// freeing the malloc'ed dynamic array pointer
+    // freeing the malloc'ed dynamic array pointer
     if (!array)
         return;
     free(array->ptr);
