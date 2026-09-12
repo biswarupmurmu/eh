@@ -18,6 +18,6 @@ typedef struct {
 
 void initEditor(Editor *editor);
 void exitEditor(Editor *editor);
-void initBuffer(Editor *editor);
+void initBuffer(Array *buffer);
 
 #endif

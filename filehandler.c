@@ -1,4 +1,5 @@
 #include "array.h"
+#include "editor.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,7 +52,10 @@ void readFileToBuffer(Array *buffer, char *filename) {
     file_ptr = fopen(filename, "r");
     if (file_ptr == NULL) {
         perror("File open failed");
-        exit(EXIT_FAILURE);
+		initBuffer(buffer);
+		return; // assuning the file does not exist
+		// need to make the logic better
+        // exit(EXIT_FAILURE);
     }
 
     while (fgets(readbuffer, sizeof(readbuffer) - 1, file_ptr) != NULL) {

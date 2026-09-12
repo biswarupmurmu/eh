@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-void initBuffer(Editor *editor) {
+void initBuffer(Array *buffer) {
     // // initialize the buffer
     Array *emptyline = malloc(sizeof(Array));
     initArray(emptyline, sizeof(char));
     addToArray(emptyline, "", emptyline->len, strlen(""));
-    addToArray(editor->buffer, &emptyline, editor->buffer->len, 1);
+    addToArray(buffer, &emptyline, buffer->len, 1);
 }
 
 void initEditor(Editor *editor) {

@@ -8,7 +8,12 @@ TARGET = $(BUILD_DIR)/eh
 
 OBJS = $(SRCS:%.c=$(BUILD_DIR)/%.o)
 
+.PHONY: all release clean
+
 all: $(TARGET)
+
+release: CFLAGS = -Wall -Wextra -O2
+release: clean all
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
