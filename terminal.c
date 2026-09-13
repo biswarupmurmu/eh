@@ -1,4 +1,3 @@
-#include <asm-generic/ioctls.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <termios.h>
