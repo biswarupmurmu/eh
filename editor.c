@@ -16,8 +16,8 @@ void initBuffer(Array *buffer) {
 void initEditor(Editor *editor) {
     enableRawMode();
     getWindowSize(&editor->window_row, &editor->window_col);
-    editor->cursor_col = 0;
-    editor->cursor_row = 0;
+    editor->cursor_col = 1;
+    editor->cursor_row = 1;
     editor->render_start_line = 0;
     editor->buffer_line = 0;
     editor->buffer_char = 0;

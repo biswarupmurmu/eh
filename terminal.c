@@ -12,7 +12,7 @@ void getWindowSize(short *row, short *col) {
         *col = 80;
         return;
     }
-    *row = ws.ws_row - 1;
+    *row = ws.ws_row;
     *col = ws.ws_col;
 }
 

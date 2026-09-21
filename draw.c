@@ -5,49 +5,108 @@
 #include <string.h>
 #include <unistd.h>
 
-#define CTRL_KEY(k) ((k) & 0x1f)
+static int rowsReqToRender(Array *array, int screenWidth) {
+    int line_len = array->len;
+    char *text = (char *)array->ptr;
 
-void drawBuffer(Editor *editor) {
-    Array original_buffer = *editor->buffer;
-    Array render_buffer;
-    initArray(&render_buffer, sizeof(char));
-
-    // clear screen \x1b[2J
-    // move mouse to top left \x1b[H
-    addToArray(&render_buffer, "\x1b[2J\x1b[H", 0, 7);
-
-    // original_buffer.ptr holds the pointer of the array
-    // containing Array pointers
-    Array **lines = (Array **)original_buffer.ptr;
-
-    int lines_to_render = original_buffer.len;
-    if (lines_to_render > editor->window_row) {
-        lines_to_render = editor->window_row;
+    if (line_len > 0 && text[line_len - 1] == '\n') {
+        line_len -= 1;
     }
 
+    if (line_len <= 0) {
+        return 1;
+    }
+    return (line_len / screenWidth) + 1;
+}
+
+static void preRenderCalculations(Editor *editor) {
+    int buffer_line = editor->buffer_line;
+    int start = editor->render_start_line;
+    int height = editor->window_row;
+    int width = editor->window_col;
+    Array **lines = (Array **)editor->buffer->ptr;
+
+    if (buffer_line < start) {
+        // if buffer_line line is above the screen
+        editor->render_start_line = buffer_line;
+    }
+
+    // calculate how many rows are required to render the lines from
+    // "render_start_line" to "buffer_line". Excluding the "buffer_line"
+    int rowsRendered = 0;
+    for (int i = editor->render_start_line; i < editor->buffer_line; i++) {
+        rowsRendered += rowsReqToRender(lines[i], editor->window_col);
+    }
+
+    // move to the "buffer_line" which is in the next row
+    editor->cursor_row = rowsRendered + 1;
+    // check if current char position affects the row count
+    editor->cursor_row += editor->buffer_char / width;
+
+    // what if the current row is below the screen
+    // we have to remove some rows from the top of the scrren
+    int rowsToBeRemoved = 0;
+    if (editor->cursor_row >= height) {
+        // cursor row is below the screen
+        rowsToBeRemoved = editor->cursor_row - height;
+    }
+
+    while (rowsToBeRemoved > 0 &&
+           editor->render_start_line < editor->buffer_line) {
+        int r = rowsReqToRender(lines[editor->render_start_line],
+                                editor->window_col);
+        editor->cursor_row -= r;
+        rowsToBeRemoved -= r;
+        editor->render_start_line += 1;
+    }
+
+    // decide the col
+    int char_index = editor->buffer_char;
+    // char_index%width
+    editor->cursor_col = (char_index % width) + 1;
+}
+
+void drawBuffer(Editor *editor) {
+    Array render_buffer;
+    initArray(&render_buffer, sizeof(char));
+    // clear screen \x1b[2J move mouse to top left \x1b[H
+    addToArray(&render_buffer, "\x1b[2J\x1b[H", 0, 7);
+
+    Array **lines = editor->buffer->ptr;
+    int rows = (int)editor->window_row;
+
+    preRenderCalculations(editor);
+
     int i = editor->render_start_line;
-    while (lines_to_render > 0) {
-        ////////
+
+    while (rows > 0 && i < editor->buffer->len) {
         if (i == editor->buffer_line) {
             addToArray(&render_buffer, "\x1b[32m", render_buffer.len, 5);
         }
-        ////////
+
         addToArray(&render_buffer, lines[i]->ptr, render_buffer.len,
                    lines[i]->len);
-        ////////
+
+        rows -= rowsReqToRender(lines[i], editor->window_col);
+
+        // this is a workaround to not print the newline character in the last
+        // line rendered, as it is causing the first line in the screen go above
+        // the screen
+        if (rows <= 0) {
+            removeFromArray(&render_buffer, render_buffer.len - 1, 1);
+        }
+
         if (i == editor->buffer_line) {
             addToArray(&render_buffer, "\x1b[0m", render_buffer.len, 4);
         }
-        //////
-        i += 1;
-        lines_to_render -= 1;
+        i++;
     }
 
-    // cursor
+    // draw cursor
     char cursor_pos[32];
-    snprintf(cursor_pos, sizeof(cursor_pos), "\x1b[%d;%dH",
-             editor->cursor_row + 1, editor->cursor_col + 1);
-    addToArray(&render_buffer, &cursor_pos, render_buffer.len,
+    snprintf(cursor_pos, sizeof(cursor_pos), "\x1b[%d;%dH", editor->cursor_row,
+             editor->cursor_col);
+    addToArray(&render_buffer, cursor_pos, render_buffer.len,
                strlen(cursor_pos));
 
     write(STDOUT_FILENO, render_buffer.ptr, render_buffer.len);
@@ -111,8 +170,8 @@ void drawSave(Editor *editor) {
 
     addBorderedText(&render_buffer, filename, w);
     addCenteredText(&render_buffer, "Enter to \033[32msave\033[0m", w, 9);
-    addCenteredText(&render_buffer, "Esc to \033[34mreturn\033[0m to editing", w,
-                    9);
+    addCenteredText(&render_buffer, "Esc to \033[34mreturn\033[0m to editing",
+                    w, 9);
     addCenteredText(&render_buffer,
                     "Ctrl+C to \033[1;31mquit without\033[0m saving", w, 11);
 

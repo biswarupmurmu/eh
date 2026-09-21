@@ -52,21 +52,23 @@ void readFileToBuffer(Array *buffer, char *filename) {
     file_ptr = fopen(filename, "r");
     if (file_ptr == NULL) {
         perror("File open failed");
-		initBuffer(buffer);
-		return; // assuning the file does not exist
-		// need to make the logic better
+        initBuffer(buffer);
+        return; // assuning the file does not exist
+                // need to make the logic better
         // exit(EXIT_FAILURE);
     }
 
     while (fgets(readbuffer, sizeof(readbuffer) - 1, file_ptr) != NULL) {
-        // create a new line
-        Array *newline = malloc(sizeof(Array));
-        initArray(newline, sizeof(char));
+        if (strlen(readbuffer) > 0) {
+            // create a new line
+            Array *newline = malloc(sizeof(Array));
+            initArray(newline, sizeof(char));
 
-        addToArray(newline, readbuffer, 0, strlen(readbuffer));
+            addToArray(newline, readbuffer, 0, strlen(readbuffer));
 
-        // passing the address of the pointer to be stored
-        addToArray(buffer, &newline, buffer->len, 1);
+            // passing the address of the pointer to be stored
+            addToArray(buffer, &newline, buffer->len, 1);
+        }
     }
     if (buffer->len == 0) {
         Array *emptyline = malloc(sizeof(Array));
