@@ -9,7 +9,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 // the last index for a line of length n will be n-1
-// the last character is a newline character, so n-1
+// if the last character is a newline character, so n-1
 
 static void updateBufferChar(Editor *editor) {
     Array **lines = (Array **)editor->buffer->ptr;
@@ -20,9 +20,16 @@ static void updateBufferChar(Editor *editor) {
 
     if (current->len == 0) {
         editor->buffer_char = 0;
-    } else if (editor->buffer_char > current->len - 1) {
-        // check if buffer_char is out of bound
-        editor->buffer_char = current->len - 1;
+        return;
+    }
+
+    if (editor->buffer_char >= current->len) {
+        char *text = (char *)current->ptr;
+        if (text[current->len - 1] == '\n') {
+            editor->buffer_char = current->len - 1;
+        } else {
+            editor->buffer_char = current->len;
+        }
     }
 }
 
@@ -64,7 +71,7 @@ void handleLeftArrow(Editor *editor) {
     int new_buffer_char = editor->buffer_char - 1;
     if (new_buffer_char < 0) {
         handleUpArrow(editor);
-        editor->buffer_char = lines[editor->buffer_line]->len - 1;
+        editor->buffer_char = lines[editor->buffer_line]->len;
     } else {
         editor->buffer_char = new_buffer_char;
     }
