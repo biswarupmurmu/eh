@@ -8,6 +8,9 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+// the last index for a line of length n will be n-1
+// the last character is a newline character, so n-1
+
 static void updateBufferChar(Editor *editor) {
     Array **lines = (Array **)editor->buffer->ptr;
     Array *current = lines[editor->buffer_line];
